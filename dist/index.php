@@ -8,12 +8,12 @@ if ($debug) echo "<p>debug enabled</p>\n";
 
 // variable definitions
 
-  $definitionId = 'Terms_of_Service'; // from PingDirectory
-  $pingFederateHost = 'pingfederate.example.com:9031'; // hostname:engine_port
-  $pingFederateUser = 'ConsentAdapter'; // PingFederate agentless adapter username
+  $definitionId = 'TermsOfService'; // from PingDirectory
+  $pingFederateHost = 'pingfederate.example.com'; // hostname:engine_port
+  $pingFederateUser = 'ConsentUsername'; // PingFederate agentless adapter username
   $pingFederatePass = '2FederateM0re'; // PingFederate agentless adapter password
-  $pingDirectoryHost = 'pingdirectory.example.com:8443'; // hostname:http_port
-  $pingDirectoryUser = 'cn=Directory Manager'; // PingDirectory user with ability to see consents
+  $pingDirectoryHost = 'pingdirectory.example.com'; // hostname:http_port
+  $pingDirectoryUser = 'cn=account'; // PingDirectory user with ability to see consents
   $pingDirectoryPass = '2FederateM0re'; // PingDirectory password
 
   // to make the code more readable, there are several PATHS defined
@@ -53,7 +53,13 @@ if ($debug) echo "<p>debug enabled</p>\n";
 
     $url = "https://" . $pingFederateHost . $resumePath . "?REF=" . $referenceId;
 
+    if ($debug) echo "<p>$url</p>\n";
+    if ($debug) echo "<p>$referenceId</p>\n";
+    if ($debug) echo "<p>$response</p>\n";
+    if ($debug) exit();
+
     header ("Location: " . $url);
+
   }
 
   // NONE - get rid of people who show up without referenceId or resumePath
@@ -122,12 +128,16 @@ if ($debug) echo "<p>debug enabled</p>\n";
     
     $url = "https://" . $pingFederateHost . "/ext/ref/pickup?REF=" . $referenceId;
 
+    if ($debug) echo "<p>$url</p>\n";
+
     $response = \Httpful\Request::get($url)
       ->authenticateWith($pingFederateUser, $pingFederatePass)
       ->expectsJson()
       ->send();
 
     $entryUUID = "{$response->body->{'chainedattr.entryUUID'}}";
+
+    if ($debug) echo "<p>$response</p>\n";
 
     if (! $entryUUID) {
       // NONE - should not happen.  Possible that the referenceId has expired.
@@ -181,6 +191,10 @@ if ($debug) echo "<p>debug enabled</p>\n";
     if (! $titleText || ! $dataText || ! $purposeText || ! $version) {
 
       if ($debug) echo "<p>There are no consent definitions.  Redirect to PingFederate.</p>\n";
+
+      if ($debug) echo "<p>$url</p>\n";
+
+      if ($debug) exit();
 
       handoff($pingFederateHost, $pingFederateUser, $pingFederatePass, $resumePath, $entryUUID);
 
